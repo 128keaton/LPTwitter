@@ -1,0 +1,3 @@
+@interface TweetCell : UITableViewCell
+
+@end
