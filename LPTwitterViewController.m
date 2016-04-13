@@ -9,10 +9,17 @@
 	if (self) {
 		_ibView = [[[NSBundle bundleWithPath:@"/Library/Application Support/LPInterfaceBuilderExample"] loadNibNamed:@"LPTwitterView" owner:self options:nil] objectAtIndex:0];
 		[self setView:_ibView];
-        _tweetCell = [[[NSBundle bundleWithPath:@"/Library/Application Support/LPInterfaceBuilderExample"] loadNibNamed:@"TweetCell" owner:self options:nil] objectAtIndex:0];
+       
 	}
     self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.delegate = self;
+    self.refreshControl = [[UIRefreshControl alloc] init];
+    self.refreshControl.backgroundColor = [UIColor clearColor];
+    self.refreshControl.tintColor = [UIColor whiteColor];
+    [self.refreshControl addTarget:self
+                            action:@selector(getTimeLine)
+                  forControlEvents:UIControlEventValueChanged];
+    
 	return self;
 }
 
@@ -48,7 +55,8 @@
 -(void)tableView:(UITableView *)tableView
 didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
         NSDictionary *tweet = _dataSource[[indexPath row]];
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://twitter.com/edent/status/%@", tweet[@"id"]]]];
+    
+    [self favoriteTweet:tweet[@"id"]];
    [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 -(CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -103,6 +111,7 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                 
                               
                               [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:0] withRowAnimation:UITableViewRowAnimationAutomatic];
+                              [self.refreshControl endRefreshing];
                           });
                       }
                   }];
@@ -118,6 +127,54 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
 	NSLog(@"pageDidPresent called!");
    
     
+}
+-(void)favoriteTweet:(NSString *)ident{
+    ACAccountStore *account = [[ACAccountStore alloc] init];
+    ACAccountType *accountType = [account
+                                  accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+    
+    [account requestAccessToAccountsWithType:accountType
+                                     options:nil completion:^(BOOL granted, NSError *error)
+     {
+         if (granted == YES)
+         {
+             NSArray *arrayOfAccounts = [account
+                                         accountsWithAccountType:accountType];
+             
+             if ([arrayOfAccounts count] > 0)
+             {
+                 NSLog(@"has account");
+                 NSLog(@"The darn id: %@", ident);
+                 ACAccount *twitterAccount =
+                 [arrayOfAccounts lastObject];
+                 
+                 NSURL *requestURL = [NSURL URLWithString:
+                                      @"https://api.twitter.com/1.1/favorites/create.json"];
+                 NSString *idD = [NSString stringWithFormat:@"%@", ident];
+                 NSDictionary *parameters = @{@"id" : idD};
+                 NSLog(@"The request %@", parameters);
+                 
+                 SLRequest *postRequest = [SLRequest
+                                           requestForServiceType:SLServiceTypeTwitter
+                                           requestMethod:SLRequestMethodPOST
+                                           URL:requestURL parameters:parameters];
+                 
+                 postRequest.account = twitterAccount;
+                 
+                 
+                 [postRequest performRequestWithHandler:^(NSData *responseData,
+                                                          NSHTTPURLResponse *urlResponse, NSError *error)
+                  {
+                      NSLog(@"Twitter HTTP response: %i", [urlResponse
+                                                           statusCode]);
+                  }];
+
+             }
+         } else {
+             // Handle failure to get account access
+         }
+     }];
+
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
