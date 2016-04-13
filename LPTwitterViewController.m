@@ -1,9 +1,11 @@
 #import "LPTwitterViewController.h"
 #include "Accounts/Accounts.h"
 #import "Social/Social.h"
+#import "MBProgressHUD.h"
 #define NSLog(LogContents, ...) NSLog((@"LPInterfaceBuilderExample: %s:%d " LogContents), __FUNCTION__, __LINE__, ##__VA_ARGS__)
 
 @implementation LPTwitterViewController
+
 -(id) init {
 	self = [super init];
 	if (self) {
@@ -57,6 +59,21 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
         NSDictionary *tweet = _dataSource[[indexPath row]];
     
     [self favoriteTweet:tweet[@"id"]];
+    self.hud = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+    
+    // Set the custom view mode to show any view.
+    self.hud.mode = MBProgressHUDModeCustomView;
+    // Set an image view with a checkmark.
+    UIImage *image = [[UIImage imageWithContentsOfFile:@"/Library/Application Support/LPTwitter/Contents/Resources/heart.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    UIImageView *imageView =  [[UIImageView alloc] initWithImage:image];
+    [imageView setTintColor:[UIColor redColor]];
+    self.hud.customView = imageView;
+   
+    // Looks a bit nicer if we make it square.
+   
+    // Optional label text.
+    self.hud.labelText = NSLocalizedString(@"Favorited!", @"HUD done title");
+    
    [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 -(CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -160,18 +177,28 @@ didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
                                            URL:requestURL parameters:parameters];
                  
                  postRequest.account = twitterAccount;
-                 
-                 
-                 [postRequest performRequestWithHandler:^(NSData *responseData,
+                 __block NSHTTPURLResponse *respyTheJinglePup = nil;
+                [postRequest performRequestWithHandler:^(NSData *responseData,
                                                           NSHTTPURLResponse *urlResponse, NSError *error)
                   {
-                      NSLog(@"Twitter HTTP response: %i", [urlResponse
+                      NSLog(@"Twitter HTTP response: %li", (long)[urlResponse
                                                            statusCode]);
+                   dispatch_async(dispatch_get_main_queue(), ^{
+                       [self.hud hide:true afterDelay:0.0f];
+                       self.hud.removeFromSuperViewOnHide = true;
+                   });
+                      respyTheJinglePup = urlResponse;
+                      
+                      
+                      
                   }];
-
+                 NSLog(@"Twitter HTTP response: %li", (long)[respyTheJinglePup
+                                                             statusCode]);
+                 
              }
          } else {
              // Handle failure to get account access
+             NSLog(@"failure");
          }
      }];
 

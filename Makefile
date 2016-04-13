@@ -8,10 +8,10 @@ PACKAGE_VERSION = $(THEOS_PACKAGE_BASE_VERSION)
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = LPTwitter
-LPTwitter_FILES = Tweak.xm LPTwitterViewController.m TweetCell.m
-LPTwitter_FRAMEWORKS = UIKit Accounts Social
-LPTwitter_LIBRARIES = lockpages
-
+LPTwitter_FILES = Tweak.xm LPTwitterViewController.m MBProgressHUD.m
+LPTwitter_FRAMEWORKS = UIKit Accounts Social Foundation QuartzCore CoreGraphics
+LPTwitter_LIBRARIES = lockpages 
+LPTwitter_LDFLAGS += -fobjc-arc 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 clean::
