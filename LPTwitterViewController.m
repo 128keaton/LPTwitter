@@ -7,7 +7,8 @@
         __LINE__, ##__VA_ARGS__)
 
 @implementation LPTwitterViewController
-@synthesize refreshControl;
+
+NSString *userPlaceHolder;
 
 - (id)init {
   self = [super init];
@@ -22,12 +23,13 @@
   }
   self.tableView.backgroundColor = [UIColor clearColor];
   self.tableView.delegate = self;
-  refreshControl = [[UIRefreshControl alloc] init];
+   UIRefreshControl *refreshControl = [[UIRefreshControl alloc] init];
   refreshControl.backgroundColor = [UIColor clearColor];
   refreshControl.tintColor = [UIColor whiteColor];
   [refreshControl addTarget:self
                      action:@selector(getTimeLine)
            forControlEvents:UIControlEventValueChanged];
+    [self setRefreshControl:refreshControl];
 
   return self;
 }
@@ -105,27 +107,27 @@
                 style:UIAlertActionStyleDestructive
               handler:^(UIAlertAction *action) {
                 NSDictionary *user = tweet[@"user"];
-                  self.username = tweet[@"screen_name"];
+                  userPlaceHolder = user[@"screen_name"];
                 NSString *replyTitle = [NSString
                     stringWithFormat:@"Replying to: %@", user[@"screen_name"]];
                 UIAlertController *alertController = [UIAlertController
                     alertControllerWithTitle:replyTitle
                                      message:@""
                               preferredStyle:UIAlertControllerStyleAlert];
+                  
 
                 [alertController addTextFieldWithConfigurationHandler:^(
                                      UITextField *textField) {
                   textField.placeholder = NSLocalizedString(@"Reply", @"Reply");
+                    [textField addTarget:self action:@selector(editingChanged:) forControlEvents:UIControlEventEditingChanged];
+                    textField.delegate = self;
                 }];
                 UIAlertAction *ok = [UIAlertAction
                     actionWithTitle:@"Reply"
                               style:UIAlertActionStyleDefault
                             handler:^(UIAlertAction *action) {
 
-                              [self reply:tweet[@"id"]
-                                    status:alertController.textFields
-                                               .firstObject.text
-                                  username:user[@"screen_name"]];
+                                [self reply:tweet status:alertController.textFields.firstObject.text];
                               self.hud = [MBProgressHUD showHUDAddedTo:self.view
                                                               animated:YES];
 
@@ -161,7 +163,7 @@
                                                      completion:nil];
 
                             }];
-                alertController.textFields.firstObject.delegate = self;
+              
                 [alertController addAction:cancel];
                 [alertController addAction:ok];
 
@@ -201,19 +203,33 @@
 
   [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
-
-- (BOOL)textField:(UITextField *)textField
-    shouldChangeCharactersInRange:(NSRange)range
-                replacementString:(NSString *)string {
-  // Prevent crashing undo bug – see note below.
-  if (range.length + range.location > textField.text.length) {
-    return NO;
-  }
-
-  NSUInteger newLength =
-      [textField.text length] + [string length] - range.length;
-  return newLength <= 140 - self.username.length;
+#define MAXLENGTH 125
+- (BOOL)textField:(UITextField *) textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    
+    NSUInteger oldLength = [textField.text length];
+    NSUInteger replacementLength = [string length];
+    NSUInteger rangeLength = range.length;
+    
+    NSUInteger newLength = oldLength - rangeLength + replacementLength;
+    
+    BOOL returnKey = [string rangeOfString: @"\n"].location != NSNotFound;
+    
+    return newLength <= MAXLENGTH || returnKey;
 }
+
+- (IBAction)editingChanged:(id)sender
+{
+    UITextField *textField = sender;
+    
+    UITextRange *textRange = textField.markedTextRange;
+    
+    if (!textRange.start || !textRange.end) {
+        if (textField.text.length > 140) {
+            textField.text = [textField.text substringToIndex:140];
+        }
+    }
+}
+
 
 - (CGFloat)tableView:(UITableView *)tableView
     estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -424,9 +440,7 @@
                            }];
 }
 
-- (void)reply:(NSString *)ident
-       status:(NSString *)status
-     username:(NSString *)username {
+- (void)reply:(NSDictionary *)fullTweet status:(NSString *)status{
   ACAccountStore *account = [[ACAccountStore alloc] init];
   ACAccountType *accountType = [account
       accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
@@ -441,11 +455,12 @@
 
                                if ([arrayOfAccounts count] > 0) {
                                  NSLog(@"has account");
-                                 NSLog(@"The darn id: %@", ident);
+                                 NSLog(@"The darn id: %@", fullTweet[@"id"]);
+                                   NSDictionary *user = fullTweet[@"user"];
                                  ACAccount *twitterAccount =
                                      [arrayOfAccounts lastObject];
                                  NSString *includedStatusUsername = [NSString
-                                     stringWithFormat:@"@%@ %@", username,
+                                     stringWithFormat:@"@%@ %@", user[@"screen_name"],
                                                       status];
                                  NSURL *requestURL = [NSURL
                                      URLWithString:@"https://api.twitter.com/"
@@ -454,7 +469,7 @@
 
                                  NSDictionary *parameters = @{
                                    @"status" : includedStatusUsername,
-                                   @"in_reply_to_status_id" : ident
+                                   @"in_reply_to_status_id" : fullTweet[@"id"]
                                  };
                                  NSLog(@"The request %@", parameters);
 
