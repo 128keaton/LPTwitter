@@ -1,9 +1,9 @@
 Package: com.128keaton.lptwitter
 Name: LPTwitter
-Depends: mobilesubstrate
+Depends: mobilesubstrate, com.dba-tech.lockpages
 Version: 0.0.1
 Architecture: iphoneos-arm
-Description: An awesome MobileSubstrate tweak!
+Description: A LockPages plugin that displays your Twitter feed!
 Maintainer: Keaton Burleson
 Author: Keaton Burleson
 Section: Tweaks
