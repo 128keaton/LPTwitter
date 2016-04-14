@@ -1,8 +1,8 @@
 #import <lockpages/LPPage-Protocol.h>
 #import <lockpages/LPPageController.h>
-#import "LPTwitterViewController.h"
+#import "LockMinderViewController.h"
 
 %ctor {
-	LPTwitterViewController *_examplePage = [[LPTwitterViewController alloc] init];
+	LockMinderViewController *_examplePage = [[LockMinderViewController alloc] init];
 	[[LPPageController sharedInstance] addPage:_examplePage];
 }

@@ -1,9 +1,10 @@
 Package: com.128keaton.lockminder
 Name: LockMinder
 Depends: mobilesubstrate, com.dba-tech.lockpages
-Version: 0.0.1
 Architecture: iphoneos-arm
 Description: A LockPages plugin that displays your Twitter feed!
 Maintainer: Keaton Burleson
 Author: Keaton Burleson
 Section: Tweaks
+Version: 0.0.1
+Installed-Size: 284

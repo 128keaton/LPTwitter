@@ -7,25 +7,22 @@ PACKAGE_VERSION = $(THEOS_PACKAGE_BASE_VERSION)
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = LPTwitter
-LPTwitter_FILES = Tweak.xm LPTwitterViewController.m MBProgressHUD.m
-LPTwitter_FRAMEWORKS = UIKit Accounts Social Foundation QuartzCore CoreGraphics
-LPTwitter_LIBRARIES = lockpages 
-LPTwitter_LDFLAGS += -fobjc-arc 
+TWEAK_NAME = LockMinder
+LockMinder_FILES = Tweak.xm LockMinderViewController.m MBProgressHUD.m
+LockMinder_FRAMEWORKS = UIKit EventKit Foundation QuartzCore CoreGraphics
+LockMinder_LIBRARIES = lockpages 
+LockMinder_LDFLAGS += -fobjc-arc 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 clean::
-	@echo Cleaning compiled NIB layout/Library/Application Support/LPTwitter/Contents/Resources/LPTwitterView.xib
-	@rm -f layout/Library/Application\ Support/LPTwitter/Contents/Resources/LPTwitterView.nib
+	@echo Cleaning compiled NIB layout/Library/Application Support/LockMinder/Contents/Resources/LockMinderView.xib
+	@rm -f layout/Library/Application\ Support/LockMinder/Contents/Resources/LockMinderView.nib
 
-	@echo Cleaning compiled NIB layout/Library/Application Support/LPTwitter/Contents/Resources/TwitterCell.xib
-	@rm -f layout/Library/Application\ Support/LPTwitter/Contents/Resources/TwitterCell.nib
 
 before-all::
-	@echo Compiling XIB layout/Library/Application Support/LPTwitter/Contents/Resources/LPTwitterView.xib
-	@ibtool --compile layout/Library/Application\ Support/LPTwitter/Contents/Resources/LPTwitterView.nib layout/Library/Application\ Support/LPTwitter/Contents/Resources/LPTwitterView.xib
-	@echo Compiling XIB layout/Library/Application Support/LPTwitter/Contents/Resources/TwitterCell.xib
-	@ibtool --compile layout/Library/Application\ Support/LPTwitter/Contents/Resources/TwitterCell.nib layout/Library/Application\ Support/LPTwitter/Contents/Resources/TwitterCell.xib
+	@echo Compiling XIB layout/Library/Application Support/LockMinder/Contents/Resources/LockMinderView.xib
+	@ibtool --compile layout/Library/Application\ Support/LockMinder/Contents/Resources/LockMinderView.nib layout/Library/Application\ Support/LockMinder/Contents/Resources/LockMinderView.xib
+	
 
 
 after-install::
