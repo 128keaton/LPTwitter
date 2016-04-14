@@ -203,9 +203,9 @@ NSString *userPlaceHolder;
 
   [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
-#define MAXLENGTH 125
+
 - (BOOL)textField:(UITextField *) textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
-    
+    NSUInteger MAXLENGTH = 140 - userPlaceHolder.length;
     NSUInteger oldLength = [textField.text length];
     NSUInteger replacementLength = [string length];
     NSUInteger rangeLength = range.length;
