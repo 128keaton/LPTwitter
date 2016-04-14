@@ -1,5 +1,5 @@
-Package: com.128keaton.lockminder
-Name: LockMinder
+Package: com.128keaton.lptwitter
+Name: LPTwitter
 Depends: mobilesubstrate, com.dba-tech.lockpages
 Version: 0.0.1
 Architecture: iphoneos-arm
